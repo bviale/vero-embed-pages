@@ -152,5 +152,45 @@
     </div>
 
     <script async src="https://vero-web-prd.vero.app/a/scripts/embed.js"></script>
+
+
+    <button id="printButton">Print Test Ticket</button>
+
+    <script>
+        const printButton = document.getElementById('printButton');
+
+        printButton.addEventListener('click', async () => {
+            try {
+                // Request the Zebra printer device
+                const device = await navigator.usb.requestDevice({
+                    filters: [{ vendorId: 0x0a5f }] // Replace with your Zebra printer's vendorId
+                });
+
+                // Open the device
+                await device.open();
+
+                // Select configuration
+                if (device.configuration === null) {
+                    await device.selectConfiguration(1);
+                }
+
+                // Claim the interface
+                await device.claimInterface(0);
+
+                // Define a test print command (ZPL for Zebra printers)
+                const testZPL = '^XA^FO50,50^A0N50,50^FDTest Ticket^FS^XZ';
+                const encoder = new TextEncoder();
+                const printData = encoder.encode(testZPL);
+
+                // Send the data to the printer
+                await device.transferOut(1, printData);
+
+                alert('Test ticket sent to the printer successfully!');
+            } catch (error) {
+                console.error('Error: ', error);
+                alert('Failed to send the test ticket to the printer.');
+            }
+        });
+    </script>
   </body>
 </html>
